@@ -1,0 +1,42 @@
+body, html {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+  }
+
+  .div {
+    height: 90vh;
+    background-color: red;
+  }
+
+.open-folder-button {
+  margin: 0.25em;
+}
+
+.open-file-button {
+  margin: 0.25em;
+}
+
+.add-file-button {
+  margin: 0.25em;
+}
+
+.add-folder-button {
+  margin: 0.25em;
+}
+
+.open-folder-button:hover {
+  color: #5c6072;
+}
+
+.open-file-button:hover {
+  color: #5c6072;
+}
+
+.add-file-button:hover {
+  color: #5c6072;
+}
+
+.add-folder-button:hover {
+  color: #5c6072;
+}
