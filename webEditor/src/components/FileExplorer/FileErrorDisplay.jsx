@@ -20,6 +20,7 @@ const FileErrorDisplay = () => {
             setShowPopover(true);
             setTimeout(() => {
                 setShowPopover(false);
+                console.log("popover showing...")
             }, 3000)
         } else {
             onClose();
@@ -31,7 +32,7 @@ const FileErrorDisplay = () => {
         <PopoverContent>
             <PopoverArrow />
             <PopoverCloseButton />
-            { explorerErrorHandler && <PopoverHeader>{explorerErrorHandler.message}</PopoverHeader> }
+            { explorerErrorHandler && <PopoverHeader>{explorerErrorHandler}</PopoverHeader> }
         </PopoverContent>
         </Popover> 
     );
