@@ -12,6 +12,30 @@ const InputBar = () => {
 
     console.log("ROOT:", root)
 
+    const handleInputClick = (e) => {
+        e.preventDefault();
+        const openFolderInput = document.getElementById('folder-input');
+        const openFileIput = document.getElementById('file-input');
+        const addFolderInput = document.getElementById('folder-add-input');
+        console.log("element classname clicked: ", e.target.farthestViewportElement.id);
+        switch(e.target.farthestViewportElement.id){
+            case "open-folder": 
+                console.log("Open Folder Button Clicked");
+                openFolderInput.click();
+                break;
+            case "open-file": 
+                console.log("Open File Button Clicked")
+                openFileIput.click();
+                break;
+            case "add-folder":
+                console.log("Add Folder Button Clicked");
+                addFolderInput.click();
+                break;
+            default: 
+                return;
+        }
+    }
+
     const buildDirectoryObject = (fileArray) => {
         console.log('directory obj being built: ');
     
@@ -63,21 +87,6 @@ const InputBar = () => {
         console.log('adding files !!!', JSON.stringify(root, null, 2));
         setFiles(prevState => ({ ...prevState, ...root}));
     }
-
-    const handleInputClickFolder = (e) => {
-        e.preventDefault();
-        document.getElementById('folder-input').click();
-    };
-
-    const handleInputClickFile = (e) => {
-        e.preventDefault();
-        document.getElementById('file-input').click();
-    };
-
-    const handleInputClickAddFolder = (e) => {
-        e.preventDefault();
-        document.getElementById('folder-add-input').click();
-    };
 
     const handleFolderChange = (e) => {
         const file = Array.from(e.target.files);
@@ -146,8 +155,8 @@ const InputBar = () => {
                 onChange={handleFolderChange}
             />
             <Tooltip label="Open Folder" aria-label="open folder tooltip">
-                <button onClick={handleInputClickFolder} className="open-folder-button">
-                    <FaFolder size="1.3em" />
+                <button onClick={handleInputClick} className="open-folder-button">
+                    <FaFolder size="1.3em" id="open-folder"/>
                 </button>
             </Tooltip>
 
@@ -159,8 +168,8 @@ const InputBar = () => {
                 onChange={handleFileChange}
             />
             <Tooltip label="Open File" aria-label="open file tooltip">
-                <button onClick={handleInputClickFile} className="open-file-button">
-                    <FaFile size="1.2em" />
+                <button onClick={handleInputClick} className="open-file-button">
+                    <FaFile size="1.2em" id="open-file"/>
                 </button>
             </Tooltip>
 
@@ -173,8 +182,8 @@ const InputBar = () => {
                 webkitdirectory="true"
             />
             <Tooltip label="Add Folder" aria-label="add folder tooltip">
-                <button onClick={handleInputClickAddFolder} className="add-folder-button">
-                    <FaFolderPlus size="1.3em" />
+                <button onClick={handleInputClick} className="add-folder-button">
+                    <FaFolderPlus size="1.3em" id="add-folder"/>
                 </button>
             </Tooltip>
         </Box>
