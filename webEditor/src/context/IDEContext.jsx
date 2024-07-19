@@ -11,13 +11,13 @@ export const IDEProvider = ({ children }) => {
     const [activeFile, setActiveFile] = useState(null);
     const [files, setFiles] = useState(null);
     const [explorerErrorHandler, setExplorerErrorHandler] = useState(null);
-    const [cachedFileArray, setCachedFleArray] = useState(null);
+    const [cachedFileArray, setCachedFileArray] = useState(null);
 
     return (
         <FileDirectoryContext.Provider value={{ files, setFiles }}>
             <ActiveFileContext.Provider value={{ activeFile, setActiveFile }}>
                 <ExplorerErrorHandler.Provider value={{ explorerErrorHandler, setExplorerErrorHandler }}>
-                    <CachedFileArrayContext.Provider value={{ cachedFileArray, setCachedFleArray }}>
+                    <CachedFileArrayContext.Provider value={{ cachedFileArray, setCachedFileArray }}>
                         { children }
                     </CachedFileArrayContext.Provider>
                 </ExplorerErrorHandler.Provider>
