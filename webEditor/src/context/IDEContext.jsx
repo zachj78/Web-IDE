@@ -4,18 +4,22 @@ import React, { createContext, useState } from 'react';
 export const ActiveFileContext = createContext();
 export const FileDirectoryContext = createContext();
 export const ExplorerErrorHandler = createContext();
+export const CachedFileArrayContext = createContext();
 
 //Create provider Components
 export const IDEProvider = ({ children }) => {
     const [activeFile, setActiveFile] = useState(null);
     const [files, setFiles] = useState(null);
-    const [explorerErrorHandler, setExplorerErrorHandler] = useState();
+    const [explorerErrorHandler, setExplorerErrorHandler] = useState(null);
+    const [cachedFileArray, setCachedFleArray] = useState(null);
 
     return (
         <FileDirectoryContext.Provider value={{ files, setFiles }}>
             <ActiveFileContext.Provider value={{ activeFile, setActiveFile }}>
                 <ExplorerErrorHandler.Provider value={{ explorerErrorHandler, setExplorerErrorHandler }}>
-                    { children }
+                    <CachedFileArrayContext.Provider value={{ cachedFileArray, setCachedFleArray }}>
+                        { children }
+                    </CachedFileArrayContext.Provider>
                 </ExplorerErrorHandler.Provider>
             </ActiveFileContext.Provider>
         </FileDirectoryContext.Provider>
