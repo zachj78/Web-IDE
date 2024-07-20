@@ -4,6 +4,7 @@ import { useRef, useState, useContext, useEffect } from 'react';
 import { CODE_SNIPPETS } from '../../constants';
 import Output from './Output';
 import ExplorerWindow from '../FileExplorer/ExplorerWindow'
+import ActiveFileBar from './ActiveFileBar';
 import { ActiveFileContext } from '../../context/IDEContext';
 
 const CodeEditor = () => {
@@ -56,18 +57,12 @@ const CodeEditor = () => {
         editor.focus();
     }
 
-    const onSelect = (language) => {
-        setLanguage(language);
-        setValue(
-            CODE_SNIPPETS[language]
-        );
-    }
-
     return (
         <Box>
             <HStack spacing={6}>
                 <ExplorerWindow />
                 <Box w="60vw">
+                <ActiveFileBar />
                     <Editor 
                         height="90vh" 
                         language={language}
