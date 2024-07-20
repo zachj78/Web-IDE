@@ -39,12 +39,6 @@ const Output = (props) => {
         <>
             <Box w='45vw'>
                 <Text mb={2} fontSize='lg'>Output</Text>
-                <Button
-                variant='outline'
-                colorScheme='green'
-                mb={4}
-                onClick={runCode}
-                isLoading={isLoading}>Run Code</Button>
                 <Box
                 height='90vh'
                 p={2}
@@ -56,7 +50,14 @@ const Output = (props) => {
                 }
                 borderRadius={4}>
                 {
-                    output ? output.map((line, index) => <Text key={index}>{line}</Text>) : 'Click Run Code to Run Code in this box!'
+                    output ? output.map((line, index) => <Text key={index}>{line}</Text>) 
+                    :
+                    <Button
+                    variant='outline'
+                    colorScheme='green'
+                    mb={4}
+                    onClick={runCode}
+                    isLoading={isLoading}>Run Code</Button>
                 }
                 </Box>
             </Box>
