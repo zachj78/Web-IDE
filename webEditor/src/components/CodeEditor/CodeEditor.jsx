@@ -5,7 +5,7 @@ import { CODE_SNIPPETS } from '../../constants';
 import Output from './Output';
 import ExplorerWindow from '../FileExplorer/ExplorerWindow'
 import ActiveFileBar from './ActiveFileBar';
-import { ActiveFileContext, SelectedFileContext } from '../../context/IDEContext';
+import { SelectedFileContext } from '../../context/IDEContext';
 
 const CodeEditor = () => {
     const editorRef = useRef();
@@ -47,10 +47,10 @@ const CodeEditor = () => {
                     setLanguage("c");
                     break;
                 default:
-                    setLanguage("plaintext"); // or handle unrecognized file types
+                    setLanguage("plaintext");
             }
         }
-    }, [selectedFile]); // Only re-run the effect if activeFile changes
+    }, [selectedFile]);
 
     const onMount = (editor) => {
         editorRef.current = editor;
