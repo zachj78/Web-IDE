@@ -1,12 +1,19 @@
+.file-div {
+    cursor: pointer;
+    padding: 0;
+    margin: 0;
+    display: inline-block;
+    height: 30px;
+    padding: 10px;
+    font-size: 1.3dvh;
+}
+
 .clicked-file-div {
     font-style: italic;
-    font-size: 10px;
     background-color: #1C1C1C;
-    cursor: pointer;
 }
 
 .active-file-div {
-    font-size: 10px;
     background-color: #1C1C1C;
     cursor: pointer;
 }
