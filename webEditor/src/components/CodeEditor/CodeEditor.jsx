@@ -64,6 +64,7 @@ const CodeEditor = () => {
                 <Box w="60vw">
                 <ActiveFileBar />
                     <Editor 
+                        width="45vw"
                         height="90vh" 
                         language={language}
                         defaultValue={CODE_SNIPPETS[language]}
