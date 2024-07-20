@@ -1,9 +1,7 @@
 import { useState } from 'react';
 import { Box, VStack } from '@chakra-ui/react';
-import CodeEditor from './components/CodeEditor';
-import InputBar from './components/FileExplorer/InputBar';
+import CodeEditor from './components/CodeEditor/CodeEditor';
 import { IDEProvider } from './context/IDEContext';
-import FileTree from './components/FileExplorer/FileTree';
 
 const App = () => {
   return (

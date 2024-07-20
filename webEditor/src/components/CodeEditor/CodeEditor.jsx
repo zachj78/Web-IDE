@@ -1,10 +1,10 @@
 import { Box, HStack } from '@chakra-ui/react';
 import { Editor } from '@monaco-editor/react';
 import { useRef, useState, useContext, useEffect } from 'react';
-import { CODE_SNIPPETS } from '../constants';
+import { CODE_SNIPPETS } from '../../constants';
 import Output from './Output';
-import ExplorerWindow from './FileExplorer/ExplorerWindow'
-import { ActiveFileContext } from '../context/IDEContext';
+import ExplorerWindow from '../FileExplorer/ExplorerWindow'
+import { ActiveFileContext } from '../../context/IDEContext';
 
 const CodeEditor = () => {
     const editorRef = useRef();
