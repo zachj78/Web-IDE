@@ -1,15 +1,13 @@
 import React, { useContext, useEffect } from 'react';
 import { Box, Tooltip } from '@chakra-ui/react';
-import { FaFolder, FaFolderPlus } from 'react-icons/fa';
+import { FaFolder } from 'react-icons/fa';
 import { CachedFileArrayContext, FileDirectoryContext } from '../../context/IDEContext';
 import { ExplorerErrorHandler } from '../../context/IDEContext';
-import { ActiveFileContext } from '../../context/IDEContext';
 import { FaFile } from "react-icons/fa6";
-import { AiFillFileAdd } from "react-icons/ai";
 
 const InputBar = () => {
     const { files, setFiles } = useContext(FileDirectoryContext);
-    const { explorerErrorHandler, setExplorerErrorHandler } = useContext(ExplorerErrorHandler);
+    const { setExplorerErrorHandler } = useContext(ExplorerErrorHandler);
     const { cachedFileArray, setCachedFileArray } = useContext(CachedFileArrayContext);
     let directoryAction = null;
     let root = {};
