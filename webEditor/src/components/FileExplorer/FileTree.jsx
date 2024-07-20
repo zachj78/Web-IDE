@@ -1,13 +1,47 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { List, ListItem, Box } from '@chakra-ui/react';
 import { FaChevronRight, FaChevronDown } from 'react-icons/fa';
-import { ActiveFileContext, FileDirectoryContext } from '../../context/IDEContext';
+import { ActiveFileContext, ClickedFileContext, FileDirectoryContext, SelectedFileContext } from '../../context/IDEContext';
 import "../../styles/FileTree.css"
 
 const FileTree = () => {
   const { files } = useContext(FileDirectoryContext);
-  const { activeFile, setActiveFile } = useContext(ActiveFileContext);
+  const { activeFiles, setActiveFiles } = useContext(ActiveFileContext);
+  const { clickedFiles, setClickedFiles } = useContext(ClickedFileContext);
+  const { selectedFile, setSelectedFile } = useContext(SelectedFileContext);
   const [collapsed, setCollapsed] = useState({});
+
+  useEffect(() => {
+    console.log("SELECTED FILE", selectedFile)
+  }, [selectedFile])
+
+  useEffect(() => {
+    console.log("ACTIVE FILE ARRAY: ", activeFiles);
+  }, [activeFiles])
+
+  const handleFileClick = (fileName) => {
+    console.log("HANDLE FILE CLICK", fileName)
+    if(activeFiles.includes(fileName)) {
+      setSelectedFile(fileName);
+    } else {
+      setClickedFiles(fileName);
+      setSelectedFile(fileName);
+    }
+  };
+
+  const handleDoubleClick = (fileName) => {
+    if(clickedFiles === fileName) {
+      console.log("clicked file => activeFiles")
+      setClickedFiles(null);
+    }
+
+    if(activeFiles.includes(fileName)) {
+      return;
+    } else {
+      setActiveFiles((prevState) => [fileName, ...prevState]);
+      setSelectedFile(fileName);
+    }
+  }
 
   const toggleCollapse = (key) => {
     setCollapsed(prevCollapsed => ({
@@ -41,9 +75,13 @@ const FileTree = () => {
                   {!isCollapsed && renderDirectory(files[key], `${path}/`)}
                 </Box>
               ) : (
-                key === activeFile ? 
+                activeFiles === key ? 
                   <Box pl={4} bgColor="#444444">{key}</Box> :
-                  <Box cursor="pointer" className="file-name" pl={4} onClick={() => setActiveFile(key)}>{key}</Box> 
+                  <Box cursor="pointer" className="file-name" 
+                  pl={4} 
+                  onClick={() => handleFileClick(key)}
+                  onDoubleClick={() => handleDoubleClick(key)}
+                  >{key}</Box> 
               )}
             </ListItem>
           );
