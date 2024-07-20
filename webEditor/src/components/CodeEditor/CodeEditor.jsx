@@ -5,20 +5,20 @@ import { CODE_SNIPPETS } from '../../constants';
 import Output from './Output';
 import ExplorerWindow from '../FileExplorer/ExplorerWindow'
 import ActiveFileBar from './ActiveFileBar';
-import { ActiveFileContext } from '../../context/IDEContext';
+import { ActiveFileContext, SelectedFileContext } from '../../context/IDEContext';
 
 const CodeEditor = () => {
     const editorRef = useRef();
     const [value, setValue] = useState("");
     const [language, setLanguage] = useState("javascript");
-    const { activeFile } = useContext(ActiveFileContext);
+    const { selectedFile, setSelectedFile } = useContext(SelectedFileContext);
 
     useEffect(() => {
-        if(activeFile) {
-            let index = activeFile.split(".").length - 1;
-            let activeFileType =  activeFile.split(".")[index];
+        if(selectedFile) {
+            let index = selectedFile.split(".").length - 1;
+            let fileType =  selectedFile.split(".")[index];
             
-            switch(activeFileType) {
+            switch(fileType) {
                 case "txt":
                     setLanguage("plaintext");
                     break;
@@ -50,7 +50,7 @@ const CodeEditor = () => {
                     setLanguage("plaintext"); // or handle unrecognized file types
             }
         }
-    }, [activeFile]); // Only re-run the effect if activeFile changes
+    }, [selectedFile]); // Only re-run the effect if activeFile changes
 
     const onMount = (editor) => {
         editorRef.current = editor;
