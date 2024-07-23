@@ -6,36 +6,39 @@ import {
   PopoverHeader,
   PopoverArrow,
   PopoverCloseButton,
-  useDisclosure
+  useDisclosure,
 } from '@chakra-ui/react';
 
 const FileErrorDisplay = () => {
-    const { explorerErrorHandler, setExplorerErrorHandler } = useContext(ExplorerErrorHandler);
-    const { isOpen, onOpen, onClose } = useDisclosure();
-    const [ showPopover, setShowPopover ] = useState(false); 
+  const { explorerErrorHandler, setExplorerErrorHandler } =
+    useContext(ExplorerErrorHandler);
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [showPopover, setShowPopover] = useState(false);
 
-    useEffect(() => {
-        if(explorerErrorHandler) {
-            console.log("explorer error handler exists")
-            setShowPopover(true);
-            setTimeout(() => {
-                setShowPopover(false);
-                console.log("popover showing...")
-            }, 3000)
-        } else {
-            onClose();
-        }
-    }, [explorerErrorHandler, onOpen, onClose]);
+  useEffect(() => {
+    if (explorerErrorHandler) {
+      console.log('explorer error handler exists');
+      setShowPopover(true);
+      setTimeout(() => {
+        setShowPopover(false);
+        console.log('popover showing...');
+      }, 3000);
+    } else {
+      onClose();
+    }
+  }, [explorerErrorHandler, onOpen, onClose]);
 
-    return (
-        <Popover isOpen={showPopover}>
-        <PopoverContent>
-            <PopoverArrow />
-            <PopoverCloseButton />
-            { explorerErrorHandler && <PopoverHeader>{explorerErrorHandler}</PopoverHeader> }
-        </PopoverContent>
-        </Popover> 
-    );
-}
- 
+  return (
+    <Popover isOpen={showPopover}>
+      <PopoverContent>
+        <PopoverArrow />
+        <PopoverCloseButton />
+        {explorerErrorHandler && (
+          <PopoverHeader>{explorerErrorHandler}</PopoverHeader>
+        )}
+      </PopoverContent>
+    </Popover>
+  );
+};
+
 export default FileErrorDisplay;
