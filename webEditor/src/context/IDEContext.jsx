@@ -4,18 +4,17 @@ import React, { createContext, useState } from 'react';
 export const ActiveFileContext = createContext();
 export const FileDirectoryContext = createContext();
 export const ExplorerErrorHandler = createContext();
-export const CachedFileArrayContext = createContext();
 export const ClickedFileContext = createContext();
 export const SelectedFileContext = createContext();
+export const FileHandleArrayContext = createContext();
 
 //Create provider Components
 export const IDEProvider = ({ children }) => {
   const [activeFiles, setActiveFiles] = useState([]);
   const [files, setFiles] = useState(null);
-  const [explorerErrorHandler, setExplorerErrorHandler] = useState(null);
-  const [cachedFileArray, setCachedFileArray] = useState(null);
-  const [clickedFiles, setClickedFiles] = useState(null);
+  const [explorerErrorHandler, setExplorerErrorHandler] = useState(null);  const [clickedFiles, setClickedFiles] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
+  const [fileHandles, setFileHandles] = useState([]);
 
   return (
     <FileDirectoryContext.Provider value={{ files, setFiles }}>
@@ -24,15 +23,11 @@ export const IDEProvider = ({ children }) => {
           <ClickedFileContext.Provider
             value={{ clickedFiles, setClickedFiles }}
           >
-            <ExplorerErrorHandler.Provider
-              value={{ explorerErrorHandler, setExplorerErrorHandler }}
-            >
-              <CachedFileArrayContext.Provider
-                value={{ cachedFileArray, setCachedFileArray }}
-              >
+            <FileHandleArrayContext.Provider value = {{ fileHandles, setFileHandles}}>
+              <ExplorerErrorHandler.Provider value={{ explorerErrorHandler, setExplorerErrorHandler }}>
                 {children}
-              </CachedFileArrayContext.Provider>
-            </ExplorerErrorHandler.Provider>
+              </ExplorerErrorHandler.Provider>
+            </FileHandleArrayContext.Provider>
           </ClickedFileContext.Provider>
         </SelectedFileContext.Provider>
       </ActiveFileContext.Provider>
