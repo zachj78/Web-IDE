@@ -1,17 +1,76 @@
 import { Box, HStack } from '@chakra-ui/react';
 import { Editor } from '@monaco-editor/react';
 import { useRef, useState, useContext, useEffect } from 'react';
-import { CODE_SNIPPETS } from '../../constants';
 import Output from './Output';
 import ExplorerWindow from '../FileExplorer/ExplorerWindow';
 import ActiveFileBar from './ActiveFileBar';
-import { SelectedFileContext } from '../../context/IDEContext';
+import { ActiveFileContext, ClickedFileContext, DirectoryHandleArrayContext, FileHandleArrayContext, SelectedFileContext } from '../../context/IDEContext'
 
 const CodeEditor = () => {
   const editorRef = useRef();
-  const [value, setValue] = useState('');
   const [language, setLanguage] = useState('javascript');
-  const { selectedFile, setSelectedFile } = useContext(SelectedFileContext);
+  const [fileContent, setFileContent] = useState("");
+  const { selectedFile } = useContext(SelectedFileContext);
+  const { fileHandles } = useContext(FileHandleArrayContext);
+  const { directoryHandles } = useContext(DirectoryHandleArrayContext);
+  const { activeFiles } = useContext(ActiveFileContext);
+  const { clickedFile} = useContext(ClickedFileContext);
+
+  useEffect(() => {
+    if(activeFiles.length === 0 && !clickedFile) {
+      setFileContent("");
+    }
+    console.log("act, ", activeFiles, "cli, ", clickedFile);
+  }, [activeFiles, clickedFile])
+
+  useEffect(() => {
+    //reading file
+    const readFile = async () =>  {
+      if(fileHandles && selectedFile) {
+        for(const handle of fileHandles) {
+          if(handle.name === selectedFile) {
+            const file = await handle.getFile();
+            const fileData = await file.text();
+            
+            setFileContent(fileData);
+          }
+        }
+      }
+    }
+
+    readFile();
+  }, [selectedFile])
+
+  useEffect(() => {
+    console.log('Directory handles: ', directoryHandles);
+  }, [directoryHandles])
+
+  useEffect(() => {
+    //save keybind
+    const handleKeyDown = (e) => {
+      if((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        //save file here
+        const writeFile = async () => {
+          if(fileHandles && selectedFile) {
+            for(const handle of fileHandles) {
+              if(handle.name === selectedFile) {
+                const writeableStream = await handle.createWritable();
+                await writeableStream.write(fileContent);
+                await writeableStream.close();
+              }
+            }
+          }
+        }
+
+        writeFile();
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    }
+  }, [fileContent])
 
   useEffect(() => {
     if (selectedFile) {
@@ -67,11 +126,10 @@ const CodeEditor = () => {
             width="45vw"
             height="90vh"
             language={language}
-            defaultValue={CODE_SNIPPETS[language]}
             theme="vs-dark"
             onMount={onMount}
-            value={value}
-            onChange={(value) => setValue(value)}
+            value={fileContent}
+            onChange={(fileContent) => setFileContent(fileContent)}
           />
         </Box>
         <Output editorRef={editorRef} language={language} />
