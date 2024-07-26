@@ -17,9 +17,6 @@ const FileTree = () => {
   const [collapsed, setCollapsed] = useState({});
 
   useEffect(() => {
-    console.log('Collapsed object:', collapsed);
-    console.log('Files: ', files)
-
     setCollapsed(initializeCollapsedState(files));
   }, [files])
 
@@ -36,16 +33,7 @@ const FileTree = () => {
     return initialState;
   }
 
-  useEffect(() => {
-    console.log('SELECTED FILE', selectedFile);
-  }, [selectedFile]);
-
-  useEffect(() => {
-    console.log('ACTIVE FILE ARRAY: ', activeFiles);
-  }, [activeFiles]);
-
   const handleFileClick = (fileName) => {
-    console.log('HANDLE FILE CLICK', fileName);
     if (activeFiles.includes(fileName)) {
       setSelectedFile(fileName);
     } else {
@@ -56,7 +44,6 @@ const FileTree = () => {
 
   const handleDoubleClick = (fileName) => {
     if (clickedFiles === fileName) {
-      console.log('clicked file => activeFiles');
       setClickedFiles(null);
     }
 
@@ -80,7 +67,6 @@ const FileTree = () => {
       <List spacing={2} styleType="none" id="list">
         {Object.keys(files).map((key) => {
           const path = `${parentKey}${key}`;
-          console.log("PATH: ", path);
           const isCollapsed = collapsed[path] || false;
           const hasChildren = typeof files[key] === 'object';
         
