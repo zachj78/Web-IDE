@@ -1,18 +1,66 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useContext, useEffect, useState, useRef } from 'react';
 import { Box, Tooltip } from '@chakra-ui/react';
 import { FaFolder } from 'react-icons/fa';
-import { FileDirectoryContext, ExplorerErrorHandler, FileHandleArrayContext, DirectoryHandleArrayContext } from '../../context/IDEContext';
+import { FileDirectoryContext, ExplorerErrorHandler, FileHandleArrayContext, DirectoryHandleArrayContext, ClickedFolderContext } from '../../context/IDEContext';
 import { FaFile } from 'react-icons/fa6';
+import { AiFillFileAdd } from "react-icons/ai";
 
 const InputBar = () => {
   const { files, setFiles } = useContext(FileDirectoryContext);
   const { setExplorerErrorHandler } = useContext(ExplorerErrorHandler);
   const { fileHandles, setFileHandles } = useContext(FileHandleArrayContext);
-  const { setDirectoryHandles } = useContext(DirectoryHandleArrayContext);
+  const { directoryHandles, setDirectoryHandles } = useContext(DirectoryHandleArrayContext);
+  const {clickedFolder} = useContext(ClickedFolderContext);
+  const [newFileRender, setNewFileRender] = useState(false);
+  let newFileName = useRef();
 
   useEffect(() => {
-    console.log('files updated: ', files);
-  }, [files]);
+    console.log('files handles: ', fileHandles);
+    console.log('directory handles : ', directoryHandles);
+  }, [fileHandles, directoryHandles]);
+
+  const handleFileCreate = async (e) => { //fix this function wtf --Object.entries(directoryHandles) not working right
+    e.preventDefault();
+
+    try {
+      if(!directoryHandles) {
+        setExplorerErrorHandler("Please upload a folder first");
+        return;
+      }
+
+      if(!clickedFolder) {
+        setExplorerErrorHandler("Selected a folder to create file in");
+        return;
+      }
+
+      for(const [name, handle] of Object.entries(directoryHandles)) {
+        console.log("handles", name, handle)
+        if(name === clickedFolder) {
+          console.log(`FILE BEING CREATED AT : HANDLE(value): ${handle} : name(key) : ${name}`)
+          const fileName = newFileName.current.value;
+          console.log("CREATING NEW FILE : ", fileName);
+          const fileHandle = await handle.getFileHandle(fileName, { create: true });
+
+          const writableStream = await fileHandle.createWritable();
+
+          writableStream.write(' ');
+
+          writableStream.close();
+          setNewFileRender(false);
+
+          setFileHandles((prevHandles) => ({
+            ...prevHandles,
+            fileName: fileHandle
+          }));
+
+          //update files directory object and re-render
+        }
+      }
+
+    } catch(err) {
+      console.error("Error creating file: ", err);
+    }
+  }
 
   const handleFileUpload = async () => {
     try {
@@ -45,6 +93,11 @@ const InputBar = () => {
     }
   };
 
+  //TEST CASE FOR handleDirectoryUpload
+  useEffect(() => {
+    console.log("file handles: ", fileHandles, " directory handles: ", directoryHandles);
+  }, [fileHandles, directoryHandles])
+
   const handleDirectoryUpload = async () => {
     try {
       console.log('Opening directory picker...');
@@ -56,10 +109,38 @@ const InputBar = () => {
         ...prevFiles,
         [directoryHandle.name]: structure
       }));
-      setFileHandles((prevHandles) => [...prevHandles, ...handles]);
+
+      const individualFileHandles = {};
+      const individualDirectoryHandles = {};
+
+      const mapHandles = async(directoryHandle, path = "") => {
+        if(path === "") {
+          individualDirectoryHandles[directoryHandle.name] = directoryHandle;
+          path = directoryHandle.name;
+        }
+
+      for await(const [name, handle] of directoryHandle.entries()) {
+        const fullPath = `${path}/${name}`;
+
+        if(handle.kind === 'file') {
+          individualFileHandles[fullPath] = handle;
+        } else if (handle.kind === 'directory'){
+          individualDirectoryHandles[fullPath] = handle;
+          await mapHandles(handle, fullPath);
+        }
+      }
+    }
+
+    await mapHandles(directoryHandle);
+
+
+      setFileHandles((prevHandles) => ({
+        ...prevHandles,
+        ...individualFileHandles
+      }));
       setDirectoryHandles((prevHandles) => ({
         ...prevHandles,
-        [directoryHandle.name] : directoryHandle,
+        ...individualDirectoryHandles
       }));
     } catch (err) {
       console.error('Error accessing file system', err);
@@ -117,6 +198,22 @@ const InputBar = () => {
           <FaFile size="1.2em" id="open-file" />
         </button>
       </Tooltip>
+
+      { !newFileRender ? <Tooltip label="Create New File" aria-label="create new file tooltip">
+        <button onClick={() => setNewFileRender((prevState) => !prevState)} className="open-file-button">
+          <AiFillFileAdd size="1.2em" id="open-file" />
+        </button>
+      </Tooltip>
+      : 
+      <Box>
+        <form onSubmit={handleFileCreate}>
+          <input 
+          type="text"
+          ref={newFileName}
+          />
+          <button type="submit">Submit</button>
+        </form>
+      </Box> }
     </Box>
   );
 };
