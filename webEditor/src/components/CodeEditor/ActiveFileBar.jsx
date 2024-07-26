@@ -1,11 +1,6 @@
 import React, { useContext, useEffect } from 'react';
 import { Box, HStack } from '@chakra-ui/react';
-import {
-  ClickedFileContext,
-  ActiveFileContext,
-  SelectedFileContext,
-  CachedFileArrayContext,
-} from '../../context/IDEContext';
+import { ClickedFileContext, ActiveFileContext, SelectedFileContext } from '../../context/IDEContext';
 import '../../styles/ActiveFileBar.css';
 import { FaTimes } from 'react-icons/fa';
 
@@ -13,20 +8,6 @@ const ActiveFileBar = () => {
   const { activeFiles, setActiveFiles } = useContext(ActiveFileContext);
   const { clickedFiles, setClickedFiles } = useContext(ClickedFileContext);
   const { selectedFile, setSelectedFile } = useContext(SelectedFileContext);
-  const { cachedFileArray, setCachedFileArray } = useContext(
-    CachedFileArrayContext,
-  );
-
-  useEffect(() => {
-    //any time the user selects a file program will dynamically fetch file content
-    cachedFileArray
-      ? cachedFileArray.map((file) => {
-          if (file.name === selectedFile) {
-            //make backend req with multer using current file
-          }
-        })
-      : console.log('wtf dude');
-  }, [selectedFile]);
 
   const removeActiveFile = (activeFile) => {
     const filteredFiles = activeFiles.filter((file) => file !== activeFile);
