@@ -17,6 +17,26 @@ const FileTree = () => {
   const [collapsed, setCollapsed] = useState({});
 
   useEffect(() => {
+    console.log('Collapsed object:', collapsed);
+    console.log('Files: ', files)
+
+    setCollapsed(initializeCollapsedState(files));
+  }, [files])
+
+  const initializeCollapsedState = (files, parentKey = '') => {
+    let initialState = {};
+    Object.keys(files).forEach((key) => {
+      const path = `${parentKey}${key}`;
+      if(typeof files[key] === 'object') {
+        initialState[path] = true;
+        initialState = {...initialState, ...initializeCollapsedState(files[key], `${path}/`) }
+      }
+    })
+
+    return initialState;
+  }
+
+  useEffect(() => {
     console.log('SELECTED FILE', selectedFile);
   }, [selectedFile]);
 
@@ -60,9 +80,10 @@ const FileTree = () => {
       <List spacing={2} styleType="none" id="list">
         {Object.keys(files).map((key) => {
           const path = `${parentKey}${key}`;
+          console.log("PATH: ", path);
           const isCollapsed = collapsed[path] || false;
           const hasChildren = typeof files[key] === 'object';
-
+        
           return (
             <ListItem key={path}>
               {hasChildren ? (
