@@ -19,48 +19,53 @@ const InputBar = () => {
     console.log('directory handles : ', directoryHandles);
   }, [fileHandles, directoryHandles]);
 
-  const handleFileCreate = async (e) => { //fix this function wtf --Object.entries(directoryHandles) not working right
+  const handleFileCreate = async (e) => {
     e.preventDefault();
-
+  
     try {
-      if(!directoryHandles) {
+      if (!directoryHandles) {
         setExplorerErrorHandler("Please upload a folder first");
         return;
       }
-
-      if(!clickedFolder) {
+  
+      if (!clickedFolder) {
         setExplorerErrorHandler("Selected a folder to create file in");
         return;
       }
-
-      for(const [name, handle] of Object.entries(directoryHandles)) {
-        console.log("handles", name, handle)
-        if(name === clickedFolder) {
-          console.log(`FILE BEING CREATED AT : HANDLE(value): ${handle} : name(key) : ${name}`)
+  
+      for (const [name, handle] of Object.entries(directoryHandles)) {
+        console.log("handles", name);
+        console.log("clicked folder: ", clickedFolder);
+  
+        // Check if the last part of the path matches the clicked folder
+        const lastPart = name.split('/').pop();
+        if (lastPart === clickedFolder) {
+          console.log(`FILE BEING CREATED AT : HANDLE(value): ${handle} : name(key) : ${name}`);
+          
           const fileName = newFileName.current.value;
           console.log("CREATING NEW FILE : ", fileName);
+  
           const fileHandle = await handle.getFileHandle(fileName, { create: true });
-
+  
           const writableStream = await fileHandle.createWritable();
-
           writableStream.write(' ');
-
-          writableStream.close();
+          await writableStream.close();
+  
           setNewFileRender(false);
-
+  
           setFileHandles((prevHandles) => ({
             ...prevHandles,
-            fileName: fileHandle
+            [fileName]: fileHandle  // Correctly set the file name as the key
           }));
-
-          //update files directory object and re-render
+  
+          // Update files directory object and re-render
         }
       }
-
-    } catch(err) {
+    } catch (err) {
       console.error("Error creating file: ", err);
     }
-  }
+  };
+  
 
   const handleFileUpload = async () => {
     try {
