@@ -4,6 +4,7 @@ import { FaFolder } from 'react-icons/fa';
 import { FileDirectoryContext, ExplorerErrorHandler, FileHandleArrayContext, DirectoryHandleArrayContext, ClickedFolderContext } from '../../context/IDEContext';
 import { FaFile } from 'react-icons/fa6';
 import { AiFillFileAdd } from "react-icons/ai";
+import { FaTimes } from 'react-icons/fa';
 
 const InputBar = () => {
   const { files, setFiles } = useContext(FileDirectoryContext);
@@ -13,11 +14,6 @@ const InputBar = () => {
   const {clickedFolder} = useContext(ClickedFolderContext);
   const [newFileRender, setNewFileRender] = useState(false);
   let newFileName = useRef();
-
-  useEffect(() => {
-    console.log('files handles: ', fileHandles);
-    console.log('directory handles : ', directoryHandles);
-  }, [fileHandles, directoryHandles]);
 
   const handleFileCreate = async (e) => {
     e.preventDefault();
@@ -33,18 +29,16 @@ const InputBar = () => {
         return;
       }
   
-      for (const [name, handle] of Object.entries(directoryHandles)) {
-        console.log("handles", name);
-        console.log("clicked folder: ", clickedFolder);
-  
+      for (const [name, handle] of Object.entries(directoryHandles)) {  
         // Check if the last part of the path matches the clicked folder
         const lastPart = name.split('/').pop();
-        if (lastPart === clickedFolder) {
-          console.log(`FILE BEING CREATED AT : HANDLE(value): ${handle} : name(key) : ${name}`);
-          
-          const fileName = newFileName.current.value;
-          console.log("CREATING NEW FILE : ", fileName);
-  
+        if (lastPart === clickedFolder) {          
+          if(!fileName) {
+            setExplorerErrorHandler("Please set a file name");
+            return;
+          };
+
+          const fileName = newFileName.current.value;  
           const fileHandle = await handle.getFileHandle(fileName, { create: true });
   
           const writableStream = await fileHandle.createWritable();
@@ -69,17 +63,13 @@ const InputBar = () => {
 
   const handleFileUpload = async () => {
     try {
-      console.log('Opening file picker...');
       const [fileHandle] = await window.showOpenFilePicker({
         multiple: false
       });
 
       if (fileHandle) {
-        console.log('File selected:', fileHandle.name);
         const file = await fileHandle.getFile();
-        console.log('File object:', file);
         const fileData = await file.text();
-        console.log('File data:', fileData);
 
         setFiles((prevFiles) => ({
           ...prevFiles,
@@ -90,7 +80,7 @@ const InputBar = () => {
           [fileHandle.name]: fileHandle
         }));
       } else {
-        console.log('No file selected.');
+        setExplorerErrorHandler("Please select a file!");
       }
     } catch (err) {
       console.error('Error uploading file:', err);
@@ -98,18 +88,11 @@ const InputBar = () => {
     }
   };
 
-  //TEST CASE FOR handleDirectoryUpload
-  useEffect(() => {
-    console.log("file handles: ", fileHandles, " directory handles: ", directoryHandles);
-  }, [fileHandles, directoryHandles])
-
   const handleDirectoryUpload = async () => {
     try {
-      console.log('Opening directory picker...');
       const directoryHandle = await window.showDirectoryPicker();
-      console.log('Directory selected:', directoryHandle.name);
-      const { structure } = await parseDirectory(directoryHandle);
-      console.log('Directory structure:', structure);
+      const structure = await parseDirectory(directoryHandle);
+
       setFiles((prevFiles) => ({
         ...prevFiles,
         [directoryHandle.name]: structure
@@ -157,8 +140,6 @@ const InputBar = () => {
     const directory = {};
     const chunkSize = 10;
 
-    console.log('Parsing directory:', directoryHandle.name);
-
     const directoryIterator = directoryHandle.entries();
 
     while (true) {
@@ -175,8 +156,8 @@ const InputBar = () => {
         if (handle.kind === 'file') {
           directory[name] = 'file';
         } else if (handle.kind === 'directory') {
-          const result = await parseDirectory(handle);
-          directory[name] = result.structure;
+          const nestedDir = await parseDirectory(handle);
+          directory[name] = nestedDir;
         }
       }));
 
@@ -184,7 +165,7 @@ const InputBar = () => {
     
     }
 
-    return { structure: directory, handles };
+    return directory;
   };
 
   return (
@@ -214,6 +195,12 @@ const InputBar = () => {
           ref={newFileName}
           />
           <button type="submit">Submit</button>
+          <button onClick={() => {
+            //close window
+            setNewFileRender(false);
+          }} >
+            <FaTimes size="1.3em"/>
+          </button>
         </form>
       </Box> }
     </Box>
