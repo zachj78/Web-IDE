@@ -20,26 +20,31 @@ const CodeEditor = () => {
     if(activeFiles.length === 0 && !clickedFile) {
       setFileContent("");
     }
-    console.log("act, ", activeFiles, "cli, ", clickedFile);
   }, [activeFiles, clickedFile])
 
   useEffect(() => {
-    //reading file
-    const readFile = async () =>  {
-      if(fileHandles && selectedFile) {
-        for(const handle of fileHandles) {
-          if(handle.name === selectedFile) {
-            const file = await handle.getFile();
-            const fileData = await file.text();
-            
-            setFileContent(fileData);
+    const readFile = async () => {
+      try {
+        if (fileHandles && selectedFile) {
+          console.log("FILE HANDLES:", fileHandles);
+          for (const [name, handle] of Object.entries(fileHandles)) {
+            if (name === selectedFile) {
+              console.log("handle...", handle);
+              const file = await handle.getFile();
+              const fileData = await file.text();
+              setFileContent(fileData);
+              break;
+            }
           }
         }
+      } catch (error) {
+        console.error("Error reading file:", error);
       }
-    }
+    };
 
     readFile();
-  }, [selectedFile])
+  }, [selectedFile]);
+
 
   useEffect(() => {
     console.log('Directory handles: ', directoryHandles);
@@ -51,10 +56,14 @@ const CodeEditor = () => {
       if((e.ctrlKey || e.metaKey) && e.key === 's') {
         e.preventDefault();
         //save file here
+        console.log('ctrl+s logged')
+        console.log("file handles: ", fileHandles, "selected file: ", selectedFile)
         const writeFile = async () => {
           if(fileHandles && selectedFile) {
-            for(const handle of fileHandles) {
-              if(handle.name === selectedFile) {
+            for(const [name, handle] of Object.entries(fileHandles)) {
+              console.log("file names: ", name)
+              if(name === selectedFile) {
+                console.log("yay")
                 const writeableStream = await handle.createWritable();
                 await writeableStream.write(fileContent);
                 await writeableStream.close();
