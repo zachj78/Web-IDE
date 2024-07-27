@@ -55,7 +55,7 @@ const InputBar = () => {
   
           setFileHandles((prevHandles) => ({
             ...prevHandles,
-            [fileName]: fileHandle  // Correctly set the file name as the key
+            [fileName]: fileHandle
           }));
   
           // Update files directory object and re-render
@@ -108,7 +108,7 @@ const InputBar = () => {
       console.log('Opening directory picker...');
       const directoryHandle = await window.showDirectoryPicker();
       console.log('Directory selected:', directoryHandle.name);
-      const { structure, handles } = await parseDirectory(directoryHandle);
+      const { structure } = await parseDirectory(directoryHandle);
       console.log('Directory structure:', structure);
       setFiles((prevFiles) => ({
         ...prevFiles,
@@ -155,7 +155,6 @@ const InputBar = () => {
 
   const parseDirectory = async (directoryHandle) => {
     const directory = {};
-    const handles = [];
     const chunkSize = 10;
 
     console.log('Parsing directory:', directoryHandle.name);
@@ -175,11 +174,9 @@ const InputBar = () => {
       await Promise.all(chunk.map(async ([name, handle]) => {
         if (handle.kind === 'file') {
           directory[name] = 'file';
-          handles.push(handle);
         } else if (handle.kind === 'directory') {
           const result = await parseDirectory(handle);
           directory[name] = result.structure;
-          handles.push(...result.handles);
         }
       }));
 

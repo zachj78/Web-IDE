@@ -14,41 +14,37 @@ const CodeEditor = () => {
   const { fileHandles } = useContext(FileHandleArrayContext);
   const { directoryHandles } = useContext(DirectoryHandleArrayContext);
   const { activeFiles } = useContext(ActiveFileContext);
-  const { clickedFile} = useContext(ClickedFileContext);
+  const { clickedFiles } = useContext(ClickedFileContext);
 
   useEffect(() => {
-    if(activeFiles.length === 0 && !clickedFile) {
+    if(activeFiles.length === 0 && !clickedFiles) {
       setFileContent("");
     }
-  }, [activeFiles, clickedFile])
+  }, [activeFiles, clickedFiles])
 
   useEffect(() => {
     const readFile = async () => {
       try {
-        if (fileHandles && selectedFile) {
-          console.log("FILE HANDLES:", fileHandles);
-          for (const [name, handle] of Object.entries(fileHandles)) {
-            if (name === selectedFile) {
-              console.log("handle...", handle);
-              const file = await handle.getFile();
-              const fileData = await file.text();
-              setFileContent(fileData);
-              break;
-            }
+        if (!selectedFile && !clickedFiles) {
+          return;
+        }
+  
+        for (const [name, handle] of Object.entries(fileHandles)) {
+          if (name === selectedFile) {
+            const file = await handle.getFile();
+            const content = await file.text();
+            setFileContent(content);
+            break;
           }
         }
       } catch (error) {
         console.error("Error reading file:", error);
       }
     };
-
+  
     readFile();
-  }, [selectedFile]);
-
-
-  useEffect(() => {
-    console.log('Directory handles: ', directoryHandles);
-  }, [directoryHandles])
+  }, [selectedFile, clickedFiles, fileHandles]);
+  
 
   useEffect(() => {
     //save keybind
@@ -61,9 +57,7 @@ const CodeEditor = () => {
         const writeFile = async () => {
           if(fileHandles && selectedFile) {
             for(const [name, handle] of Object.entries(fileHandles)) {
-              console.log("file names: ", name)
               if(name === selectedFile) {
-                console.log("yay")
                 const writeableStream = await handle.createWritable();
                 await writeableStream.write(fileContent);
                 await writeableStream.close();
