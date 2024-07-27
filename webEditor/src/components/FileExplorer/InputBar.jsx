@@ -4,62 +4,14 @@ import { FaFolder } from 'react-icons/fa';
 import { FileDirectoryContext, ExplorerErrorHandler, FileHandleArrayContext, DirectoryHandleArrayContext, ClickedFolderContext } from '../../context/IDEContext';
 import { FaFile } from 'react-icons/fa6';
 import { AiFillFileAdd } from "react-icons/ai";
-import { FaTimes } from 'react-icons/fa';
+import NewFileInput from './NewFileInput';
 
 const InputBar = () => {
-  const { files, setFiles } = useContext(FileDirectoryContext);
+  const { setFiles } = useContext(FileDirectoryContext);
   const { setExplorerErrorHandler } = useContext(ExplorerErrorHandler);
-  const { fileHandles, setFileHandles } = useContext(FileHandleArrayContext);
-  const { directoryHandles, setDirectoryHandles } = useContext(DirectoryHandleArrayContext);
-  const {clickedFolder} = useContext(ClickedFolderContext);
+  const { setFileHandles } = useContext(FileHandleArrayContext);
+  const { setDirectoryHandles } = useContext(DirectoryHandleArrayContext);
   const [newFileRender, setNewFileRender] = useState(false);
-  let newFileName = useRef();
-
-  const handleFileCreate = async (e) => {
-    e.preventDefault();
-  
-    try {
-      if (!directoryHandles) {
-        setExplorerErrorHandler("Please upload a folder first");
-        return;
-      }
-  
-      if (!clickedFolder) {
-        setExplorerErrorHandler("Selected a folder to create file in");
-        return;
-      }
-  
-      for (const [name, handle] of Object.entries(directoryHandles)) {  
-        // Check if the last part of the path matches the clicked folder
-        const lastPart = name.split('/').pop();
-        if (lastPart === clickedFolder) {          
-          if(!fileName) {
-            setExplorerErrorHandler("Please set a file name");
-            return;
-          };
-
-          const fileName = newFileName.current.value;  
-          const fileHandle = await handle.getFileHandle(fileName, { create: true });
-  
-          const writableStream = await fileHandle.createWritable();
-          writableStream.write(' ');
-          await writableStream.close();
-  
-          setNewFileRender(false);
-  
-          setFileHandles((prevHandles) => ({
-            ...prevHandles,
-            [fileName]: fileHandle
-          }));
-  
-          // Update files directory object and re-render
-        }
-      }
-    } catch (err) {
-      console.error("Error creating file: ", err);
-    }
-  };
-  
 
   const handleFileUpload = async () => {
     try {
@@ -188,21 +140,7 @@ const InputBar = () => {
         </button>
       </Tooltip>
       : 
-      <Box>
-        <form onSubmit={handleFileCreate}>
-          <input 
-          type="text"
-          ref={newFileName}
-          />
-          <button type="submit">Submit</button>
-          <button onClick={() => {
-            //close window
-            setNewFileRender(false);
-          }} >
-            <FaTimes size="1.3em"/>
-          </button>
-        </form>
-      </Box> }
+      <NewFileInput setNewFileRender={setNewFileRender}/>}
     </Box>
   );
 };
