@@ -45,7 +45,7 @@ const ActiveFileBar = () => {
               className="x-icon"
               size="2.2dvh"
             />
-            <span className="file-tab-text">{clickedFiles}</span>
+            <span pl={4} className="file-tab-text">{clickedFiles}</span>
           </div>
         )}
         {activeFiles &&
