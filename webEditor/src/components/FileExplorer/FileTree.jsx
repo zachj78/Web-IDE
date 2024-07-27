@@ -36,8 +36,18 @@ const FileTree = () => {
   }
 
   const handleFolderClick = (folderName) => {
-    setClickedFolder((prev) => folderName);
+    setClickedFolder(folderName);
   }
+
+  useEffect(() => {
+    if(clickedFiles) {
+      console.log(`clicked file: ${clickedFiles}`);
+    }
+
+    if(selectedFile) {
+      console.log(`selected file: ${selectedFile}`);
+    }
+  }, [clickedFiles, selectedFile])
 
   const handleFileClick = (fileName) => {
     if (!activeFiles.includes(fileName)) {
@@ -104,8 +114,8 @@ const FileTree = () => {
                   cursor="pointer"
                   className="file-name"
                   pl={4}
-                  onClick={() => handleFileClick(key)}
-                  onDoubleClick={() => handleDoubleClick(key)}
+                  onClick={() => handleFileClick(path)}
+                  onDoubleClick={() => handleDoubleClick(path)}
                 >
                   {key}
                 </Box>
