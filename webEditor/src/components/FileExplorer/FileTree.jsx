@@ -4,6 +4,7 @@ import { FaChevronRight, FaChevronDown } from 'react-icons/fa';
 import {
   ActiveFileContext,
   ClickedFileContext,
+  ClickedFolderContext,
   FileDirectoryContext,
   SelectedFileContext,
 } from '../../context/IDEContext';
@@ -14,6 +15,7 @@ const FileTree = () => {
   const { activeFiles, setActiveFiles } = useContext(ActiveFileContext);
   const { clickedFiles, setClickedFiles } = useContext(ClickedFileContext);
   const { selectedFile, setSelectedFile } = useContext(SelectedFileContext);
+  const { clickedFolder, setClickedFolder } = useContext(ClickedFolderContext);
   const [collapsed, setCollapsed] = useState({});
 
   useEffect(() => {
@@ -33,13 +35,15 @@ const FileTree = () => {
     return initialState;
   }
 
+  const handleFolderClick = (folderName) => {
+    setClickedFolder((prev) => folderName);
+  }
+
   const handleFileClick = (fileName) => {
-    if (activeFiles.includes(fileName)) {
-      setSelectedFile(fileName);
-    } else {
+    if (!activeFiles.includes(fileName)) {
       setClickedFiles(fileName);
-      setSelectedFile(fileName);
     }
+    setSelectedFile(fileName);
   };
 
   const handleDoubleClick = (fileName) => {
@@ -73,16 +77,21 @@ const FileTree = () => {
           return (
             <ListItem key={path}>
               {hasChildren ? (
-                <Box pl={4} borderLeft="1px solid black">
+                <Box>
                   <Box
+                    bgColor={ clickedFolder === key ? "#444444" : "none" }
                     fontWeight="bold"
                     mb={2}
                     display="flex"
                     alignItems="center"
-                    onClick={() => toggleCollapse(path)}
+                    onClick={() => {
+                      toggleCollapse(path);
+                      handleFolderClick(key);
+                    }}
                     cursor="pointer"
                   >
-                    {isCollapsed ? <FaChevronRight /> : <FaChevronDown />} {key}
+                    {isCollapsed ? <FaChevronRight pl={1} /> : <FaChevronDown pl={1} />} 
+                    <Box pl={4}>{key}</Box>
                   </Box>
                   {!isCollapsed && renderDirectory(files[key], `${path}/`)}
                 </Box>
