@@ -5,6 +5,7 @@ import { FileDirectoryContext, ExplorerErrorHandler, FileHandleArrayContext, Dir
 import { FaFile } from 'react-icons/fa6';
 import { AiFillFileAdd } from "react-icons/ai";
 import NewFileInput from './NewFileInput';
+import FileSelectFromDir from './FileSelectFromDir';
 
 const InputBar = () => {
   const { setFiles } = useContext(FileDirectoryContext);
@@ -12,31 +13,35 @@ const InputBar = () => {
   const { setFileHandles } = useContext(FileHandleArrayContext);
   const { setDirectoryHandles } = useContext(DirectoryHandleArrayContext);
   const [newFileRender, setNewFileRender] = useState(false);
+  const [dirFileHandles, setDirFileHandles] = useState([]);
+  const [parentHandle, setParentHandle] = useState(null);
 
-  const handleFileUpload = async () => {
+  const handleFileUploadFromDirectory = async () => {
     try {
-      const [fileHandle] = await window.showOpenFilePicker({
-        multiple: false
-      });
-
-      if (fileHandle) {
-        const file = await fileHandle.getFile();
-        const fileData = await file.text();
-
-        setFiles((prevFiles) => ({
-          ...prevFiles,
-          [file.name]: fileData
-        }));
-        setFileHandles((prevHandles) => ({
-          ...prevHandles,
-          [fileHandle.name]: fileHandle
-        }));
+      //user picks folder that contains file
+      const directoryHandle = await window.showDirectoryPicker();
+  
+      /* fileHandles is an array of all 
+      file handles w/in selected directory handle*/
+      const fileHandles = [];
+      for await (const entry of directoryHandle.values()) {
+        if (entry.kind === 'file') {
+          console.log('Files in directory: ', entry);
+          fileHandles.push(entry);
+        }
+      }
+  
+      /*Prompts user to select file from 
+      file handles array */
+      if (fileHandles.length > 0) {
+        setDirFileHandles(fileHandles);
+        setParentHandle(directoryHandle);
       } else {
-        setExplorerErrorHandler("Please select a file!");
+        setExplorerErrorHandler("No files found in the selected directory!");
       }
     } catch (err) {
-      console.error('Error uploading file:', err);
-      setExplorerErrorHandler('Error uploading file, try again');
+      console.error("Error selecting file from directory:", err);
+      setExplorerErrorHandler("Error selecting file, try again");
     }
   };
 
@@ -129,7 +134,7 @@ const InputBar = () => {
       </Tooltip>
 
       <Tooltip label="Open File" aria-label="open file tooltip">
-        <button onClick={handleFileUpload} className="open-file-button">
+        <button onClick={handleFileUploadFromDirectory} className="open-file-button">
           <FaFile size="1.2em" id="open-file" />
         </button>
       </Tooltip>
@@ -141,6 +146,8 @@ const InputBar = () => {
       </Tooltip>
       : 
       <NewFileInput setNewFileRender={setNewFileRender}/>}
+
+      { dirFileHandles && <FileSelectFromDir parentHandle={parentHandle} dirFileHandles={dirFileHandles}/>}
     </Box>
   );
 };
