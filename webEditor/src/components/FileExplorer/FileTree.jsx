@@ -1,53 +1,49 @@
 import React, { useState, useContext, useEffect } from 'react';
-import { List, ListItem, Box } from '@chakra-ui/react';
+import { List, ListItem, Box, Flex } from '@chakra-ui/react';
 import { FaChevronRight, FaChevronDown } from 'react-icons/fa';
 import {
   ActiveFileContext,
   ClickedFileContext,
   ClickedFolderContext,
+  DirectoryHandleArrayContext,
   FileDirectoryContext,
   SelectedFileContext,
 } from '../../context/IDEContext';
 import '../../styles/FileTree.css';
+import FileContextMenu from './ExplorerContextMenus/FileContextMenu';
 
 const FileTree = () => {
-  const { files } = useContext(FileDirectoryContext);
+  const { files, setFiles } = useContext(FileDirectoryContext);
   const { activeFiles, setActiveFiles } = useContext(ActiveFileContext);
   const { clickedFiles, setClickedFiles } = useContext(ClickedFileContext);
-  const { selectedFile, setSelectedFile } = useContext(SelectedFileContext);
+  const { setSelectedFile } = useContext(SelectedFileContext);
   const { clickedFolder, setClickedFolder } = useContext(ClickedFolderContext);
+  const { directoryHandles } = useContext(DirectoryHandleArrayContext);
   const [collapsed, setCollapsed] = useState({});
+  const [fileContextMenuPos, setFileContextMenuPos] = useState({ x: 0, y: 0 });
+  const [fileContextMenuItems, setFileContextMenuItems] = useState([]);
+  const [fileContextMenuVisible, setFileContextMenuVisible] = useState(false);
 
   useEffect(() => {
     setCollapsed(initializeCollapsedState(files));
-  }, [files])
+    console.log("file directory obj: ", files);
+  }, [files]);
 
   const initializeCollapsedState = (files, parentKey = '') => {
     let initialState = {};
     Object.keys(files).forEach((key) => {
       const path = `${parentKey}${key}`;
-      if(typeof files[key] === 'object') {
+      if (typeof files[key] === 'object') {
         initialState[path] = true;
-        initialState = {...initialState, ...initializeCollapsedState(files[key], `${path}/`) }
+        initialState = { ...initialState, ...initializeCollapsedState(files[key], `${path}/`) };
       }
-    })
-
+    });
     return initialState;
-  }
+  };
 
   const handleFolderClick = (folderName) => {
     setClickedFolder(folderName);
-  }
-
-  useEffect(() => {
-    if(clickedFiles) {
-      console.log(`clicked file: ${clickedFiles}`);
-    }
-
-    if(selectedFile) {
-      console.log(`selected file: ${selectedFile}`);
-    }
-  }, [clickedFiles, selectedFile])
+  };
 
   const handleFileClick = (fileName) => {
     if (!activeFiles.includes(fileName)) {
@@ -60,10 +56,7 @@ const FileTree = () => {
     if (clickedFiles === fileName) {
       setClickedFiles(null);
     }
-
-    if (activeFiles.includes(fileName)) {
-      return;
-    } else {
+    if (!activeFiles.includes(fileName)) {
       setActiveFiles((prevState) => [fileName, ...prevState]);
       setSelectedFile(fileName);
     }
@@ -76,6 +69,55 @@ const FileTree = () => {
     }));
   };
 
+  const deleteItem = async (fileName) => {
+    if(fileName !== null) {
+      //find matching directory handle: 
+      let dirPath = fileName.split('/');
+      const fileHandleName = dirPath.pop();
+      dirPath = dirPath.join("/"); // ex outpt: /Notes/ExampleFolder
+      //search directory handle keys for same name
+      for(const [name, handle] of Object.entries(directoryHandles)) {
+        if(name === dirPath) {
+          //delete file once path is found w/in directory handle
+          const fileHandle = await handle.getFileHandle(fileHandleName); 
+          console.log("file handle being deleted: ", fileHandle)
+          await handle.removeEntry(fileHandleName);
+        }
+      }
+
+      //rerender directory - remove file from files context obj
+      function deleteNestedKey(files, keyToDelete) {
+        console.log("files object: ", files, "keyToDelete: ", keyToDelete);
+        return Object.keys(files).reduce((result, key) => {
+          if(key === keyToDelete) return result;
+          if(typeof files[key] === 'object' && !Array.isArray(files[key])) {
+            result[key] = deleteNestedKey(files[key], keyToDelete)
+          } else {
+            result[key] = obj[key];
+          }
+          console.log("RESULT : ", result)
+          return result;
+        }, {});
+      };
+
+      const newDirectoryObj = deleteNestedKey(files, fileHandleName)
+      setFiles(newDirectoryObj);
+
+    } else {
+      console.log("No file chosen")
+    }
+  }
+
+  const handleFileContextMenu = (e, fileName) => {
+    e.preventDefault();
+    setFileContextMenuVisible(true);
+    setFileContextMenuPos({ x: e.clientX, y: e.clientY });
+    setFileContextMenuItems([
+      { label: 'Delete', onClick: () => deleteItem(fileName) },
+      { label: 'Rename', onClick: () => alert('rename item: ' + fileName) },
+    ]);
+  };
+
   const renderDirectory = (files, parentKey = '') => {
     return (
       <List spacing={2} styleType="none" id="list">
@@ -83,16 +125,15 @@ const FileTree = () => {
           const path = `${parentKey}${key}`;
           const isCollapsed = collapsed[path] || false;
           const hasChildren = typeof files[key] === 'object';
-        
+
           return (
             <ListItem key={path}>
               {hasChildren ? (
                 <Box>
-                  <Box
-                    bgColor={ clickedFolder === key ? "#444444" : "none" }
+                  <Flex
+                    bgColor={clickedFolder === key ? "#444444" : "none"}
                     fontWeight="bold"
                     mb={2}
-                    display="flex"
                     alignItems="center"
                     onClick={() => {
                       toggleCollapse(path);
@@ -100,22 +141,19 @@ const FileTree = () => {
                     }}
                     cursor="pointer"
                   >
-                    {isCollapsed ? <FaChevronRight pl={1} /> : <FaChevronDown pl={1} />} 
+                    {isCollapsed ? <FaChevronRight /> : <FaChevronDown />}
                     <Box pl={4}>{key}</Box>
-                  </Box>
+                  </Flex>
                   {!isCollapsed && renderDirectory(files[key], `${path}/`)}
-                </Box>
-              ) : activeFiles === key ? (
-                <Box pl={4} bgColor="#444444">
-                  {key}
                 </Box>
               ) : (
                 <Box
-                  cursor="pointer"
-                  className="file-name"
                   pl={4}
+                  bgColor={activeFiles.includes(key) ? "#444444" : "none"}
+                  cursor="pointer"
                   onClick={() => handleFileClick(path)}
                   onDoubleClick={() => handleDoubleClick(path)}
+                  onContextMenu={(e) => handleFileContextMenu(e, path)}
                 >
                   {key}
                 </Box>
@@ -134,8 +172,17 @@ const FileTree = () => {
       overflowY="auto"
       fontSize="14px"
       maxH="20vh"
+      position="relative"
     >
       {files ? renderDirectory(files) : <div>No Files Uploaded Yet!</div>}
+      {fileContextMenuVisible && (
+        <FileContextMenu
+          fileContextMenuPos={fileContextMenuPos}
+          fileContextMenuItems={fileContextMenuItems}
+          fileContextMenuVisible={fileContextMenuVisible}
+          setFileContextMenuVisible={setFileContextMenuVisible}
+        />
+      )}
     </Box>
   );
 };
