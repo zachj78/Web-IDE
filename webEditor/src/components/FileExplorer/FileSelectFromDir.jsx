@@ -4,11 +4,18 @@ import CenteredModal from '../ReusableComponents/ReusableModal';
 import { FileDirectoryContext, ExplorerErrorHandler, FileHandleArrayContext, DirectoryHandleArrayContext } from '../../context/IDEContext';
 
 const FileSelectFromDir = ({ parentHandle, dirFileHandles }) => {
-    const { setFiles } = useContext(FileDirectoryContext);
+    const { files, setFiles } = useContext(FileDirectoryContext);
     const { setExplorerErrorHandler } = useContext(ExplorerErrorHandler);
-    const { setFileHandles } = useContext(FileHandleArrayContext);
-    const { setDirectoryHandles } = useContext(DirectoryHandleArrayContext);
+    const { fileHandles, setFileHandles } = useContext(FileHandleArrayContext);
+    const { directoryHandles, setDirectoryHandles } = useContext(DirectoryHandleArrayContext);
     const [modalOpen, setModalOpen] = useState(false);
+
+
+    useEffect(() => {
+      console.log("files after file upload : ", files);
+      console.log("file handles after file upload: ", fileHandles);
+      console.log("directory handles after file upload : ", directoryHandles);
+    })
 
     useEffect(() => {
         if (dirFileHandles && dirFileHandles.length > 0) {
@@ -47,12 +54,14 @@ const FileSelectFromDir = ({ parentHandle, dirFileHandles }) => {
             [fullFilePath]: fileHandle,
           }));
 
-          setDirectoryHandles((prevHandles) => {
+          setDirectoryHandles((prevHandles = {}) => {
             if(!prevHandles[parentHandle.name]) {
                 return {
+                    ...prevHandles,
                     [parentHandle.name]: parentHandle
                 }
             }
+            return prevHandles;
           })
 
         } catch (err) {
