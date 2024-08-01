@@ -41,8 +41,8 @@ const FileTree = () => {
     return initialState;
   };
 
-  const handleFolderClick = (folderName) => {
-    setClickedFolder(folderName);
+  const handleFolderClick = (folderPath) => {
+    setClickedFolder(folderPath);
   };
 
   const handleFileClick = (fileName) => {
@@ -80,14 +80,12 @@ const FileTree = () => {
         if(name === dirPath) {
           //delete file once path is found w/in directory handle
           const fileHandle = await handle.getFileHandle(fileHandleName); 
-          console.log("file handle being deleted: ", fileHandle)
           await handle.removeEntry(fileHandleName);
         }
       }
 
       //rerender directory - remove file from files context obj
       function deleteNestedKey(files, keyToDelete) {
-        console.log("files object: ", files, "keyToDelete: ", keyToDelete);
         return Object.keys(files).reduce((result, key) => {
           if(key === keyToDelete) return result;
           if(typeof files[key] === 'object' && !Array.isArray(files[key])) {
@@ -95,7 +93,6 @@ const FileTree = () => {
           } else {
             result[key] = obj[key];
           }
-          console.log("RESULT : ", result)
           return result;
         }, {});
       };
@@ -131,13 +128,13 @@ const FileTree = () => {
               {hasChildren ? (
                 <Box>
                   <Flex
-                    bgColor={clickedFolder === key ? "#444444" : "none"}
+                    bgColor={clickedFolder && clickedFolder.split('/')[clickedFolder.split('/').length - 1] === key ? "#444444" : "none"}
                     fontWeight="bold"
                     mb={2}
                     alignItems="center"
                     onClick={() => {
                       toggleCollapse(path);
-                      handleFolderClick(key);
+                      handleFolderClick(path);
                     }}
                     cursor="pointer"
                   >
