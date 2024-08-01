@@ -1,7 +1,7 @@
 import React, { useContext, useRef } from 'react';
 import { Box, Button, FormControl, Input, InputGroup, InputRightElement } from '@chakra-ui/react';
 import { FaTimes } from 'react-icons/fa';
-import { ClickedFolderContext, DirectoryHandleArrayContext, ExplorerErrorHandler, FileHandleArrayContext } from '../../context/IDEContext';
+import { ClickedFolderContext, DirectoryHandleArrayContext, ExplorerErrorHandler, FileHandleArrayContext } from '../../../context/IDEContext';
 
 const NewFileInput = ({ setNewFileRender }) => {
   const { setExplorerErrorHandler } = useContext(ExplorerErrorHandler);
