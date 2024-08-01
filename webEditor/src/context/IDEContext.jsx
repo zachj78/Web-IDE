@@ -9,9 +9,11 @@ export const SelectedFileContext = createContext();
 export const FileHandleArrayContext = createContext();
 export const DirectoryHandleArrayContext = createContext();
 export const ClickedFolderContext = createContext();
+export const FileContentContext = createContext();
 
 //Create provider Components
 export const IDEProvider = ({ children }) => {
+  //file management context
   const [activeFiles, setActiveFiles] = useState([]);
   const [files, setFiles] = useState([]);
   const [explorerErrorHandler, setExplorerErrorHandler] = useState(null);  
@@ -20,6 +22,8 @@ export const IDEProvider = ({ children }) => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [fileHandles, setFileHandles] = useState([]);
   const [directoryHandles, setDirectoryHandles] = useState([]);
+  //file editor context
+  const [fileContent, setFileContent] = useState("");
 
   return (
     <FileDirectoryContext.Provider value={{ files, setFiles }}>
@@ -32,7 +36,9 @@ export const IDEProvider = ({ children }) => {
               <DirectoryHandleArrayContext.Provider value={{directoryHandles, setDirectoryHandles}}>
                 <ExplorerErrorHandler.Provider value={{ explorerErrorHandler, setExplorerErrorHandler }}>
                   <ClickedFolderContext.Provider value={{ clickedFolder, setClickedFolder }}>
-                    {children}
+                    <FileContentContext.Provider value={{ fileContent, setFileContent }}>
+                      {children}
+                    </FileContentContext.Provider>
                   </ClickedFolderContext.Provider>
                 </ExplorerErrorHandler.Provider>
               </DirectoryHandleArrayContext.Provider>
