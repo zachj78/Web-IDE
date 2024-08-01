@@ -26,7 +26,6 @@ const FileTree = () => {
 
   useEffect(() => {
     setCollapsed(initializeCollapsedState(files));
-    console.log("file directory obj: ", files);
   }, [files]);
 
   const initializeCollapsedState = (files, parentKey = '') => {
@@ -48,7 +47,7 @@ const FileTree = () => {
   const handleFileClick = (fileName) => {
     if (!activeFiles.includes(fileName)) {
       setClickedFiles(fileName);
-    }
+    } 
     setSelectedFile(fileName);
   };
 
@@ -115,19 +114,20 @@ const FileTree = () => {
     ]);
   };
 
-  const renderDirectory = (files, parentKey = '') => {
+  const renderDirectory = (files, parentKey = '', depth = 0) => {
     return (
       <List spacing={2} styleType="none" id="list">
         {Object.keys(files).map((key) => {
           const path = `${parentKey}${key}`;
           const isCollapsed = collapsed[path] || false;
           const hasChildren = typeof files[key] === 'object';
-
+  
           return (
             <ListItem key={path}>
               {hasChildren ? (
                 <Box>
                   <Flex
+                    pl={1 + depth * 5}
                     bgColor={clickedFolder && clickedFolder.split('/')[clickedFolder.split('/').length - 1] === key ? "#444444" : "none"}
                     fontWeight="bold"
                     mb={2}
@@ -139,13 +139,13 @@ const FileTree = () => {
                     cursor="pointer"
                   >
                     {isCollapsed ? <FaChevronRight /> : <FaChevronDown />}
-                    <Box pl={4}>{key}</Box>
+                    <Box pl={3}>{key}</Box>
                   </Flex>
-                  {!isCollapsed && renderDirectory(files[key], `${path}/`)}
+                  {!isCollapsed && renderDirectory(files[key], `${path}/`, depth + 1)} {/* Increment depth */}
                 </Box>
               ) : (
                 <Box
-                  pl={4}
+                  pl={1 + depth * 5}
                   bgColor={activeFiles.includes(key) ? "#444444" : "none"}
                   cursor="pointer"
                   onClick={() => handleFileClick(path)}
@@ -161,7 +161,7 @@ const FileTree = () => {
       </List>
     );
   };
-
+  
   return (
     <Box
       className="file-display"
