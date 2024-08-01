@@ -1,10 +1,10 @@
 import React, { useContext, useEffect, useState, useRef } from 'react';
 import { Box, Tooltip } from '@chakra-ui/react';
-import { FaFolder } from 'react-icons/fa';
+import { FaFolder, FaFolderPlus } from 'react-icons/fa';
 import { FileDirectoryContext, ExplorerErrorHandler, FileHandleArrayContext, DirectoryHandleArrayContext, ClickedFolderContext } from '../../context/IDEContext';
-import { FaFile } from 'react-icons/fa6';
-import { AiFillFileAdd } from "react-icons/ai";
-import NewFileInput from './NewFileInput';
+import { FaFile, FaFileCirclePlus  } from 'react-icons/fa6';
+import NewFileInput from './FileFolderCreation/NewFileInput';
+import NewFolderInput from './FileFolderCreation/NewFolderInput'
 import FileSelectFromDir from './FileSelectFromDir';
 
 const InputBar = () => {
@@ -13,6 +13,7 @@ const InputBar = () => {
   const { setFileHandles } = useContext(FileHandleArrayContext);
   const { setDirectoryHandles } = useContext(DirectoryHandleArrayContext);
   const [newFileRender, setNewFileRender] = useState(false);
+  const [newFolderRender, setNewFolderRender ] = useState(false);
   const [dirFileHandles, setDirFileHandles] = useState([]);
   const [parentHandle, setParentHandle] = useState(null);
 
@@ -141,11 +142,21 @@ const InputBar = () => {
 
       { !newFileRender ? <Tooltip label="Create New File" aria-label="create new file tooltip">
         <button onClick={() => setNewFileRender((prevState) => !prevState)} className="open-file-button">
-          <AiFillFileAdd size="1.2em" id="open-file" />
+          <FaFileCirclePlus size="1.2em" id="create-file" />
         </button>
       </Tooltip>
       : 
       <NewFileInput setNewFileRender={setNewFileRender}/>}
+
+      { !newFolderRender ? 
+        <Tooltip label="Create New Folder" aria-label="create new folder tooltip">
+          <button onClick={() => setNewFolderRender((prevState) => !prevState)} className="open-file-button">
+            <FaFolderPlus size="1.2em" id="create-folder" />
+          </button>
+        </Tooltip>
+        :
+        <NewFolderInput setNewFolderRender={setNewFolderRender}/>
+      }
 
       { dirFileHandles && <FileSelectFromDir parentHandle={parentHandle} dirFileHandles={dirFileHandles}/>}
     </Box>
