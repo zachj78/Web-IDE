@@ -4,79 +4,47 @@ import { useRef, useState, useContext, useEffect } from 'react';
 import Output from './Output';
 import ExplorerWindow from '../FileExplorer/ExplorerWindow';
 import ActiveFileBar from './ActiveFileBar';
-import { ActiveFileContext, ClickedFileContext, DirectoryHandleArrayContext, FileHandleArrayContext, SelectedFileContext } from '../../context/IDEContext'
+import { ActiveFileContext, ClickedFileContext, DirectoryHandleArrayContext, FileContentContext, FileHandleArrayContext, SelectedFileContext } from '../../context/IDEContext'
 
 const CodeEditor = () => {
   const editorRef = useRef();
   const [language, setLanguage] = useState('javascript');
-  const [fileContent, setFileContent] = useState("");
+  const {fileContent, setFileContent } = useContext(FileContentContext);
   const { selectedFile } = useContext(SelectedFileContext);
   const { fileHandles } = useContext(FileHandleArrayContext);
   const { directoryHandles } = useContext(DirectoryHandleArrayContext);
   const { activeFiles } = useContext(ActiveFileContext);
   const { clickedFiles } = useContext(ClickedFileContext);
 
+  const readFile = async () => {
+    try {
+      if (!selectedFile && !clickedFiles) {
+        console.log("NO SELECTED FILE OR CLICKED FILES AVAILABLE FROM readFile()")
+        return;
+      }
+  
+      for (const [name, handle] of Object.entries(fileHandles)) {
+        if (name === selectedFile) {
+          const file = await handle.getFile();
+          const content = await file.text();
+          console.log("Setting fileContent from readFile");
+          setFileContent(content);
+          break;
+        }
+      }
+    } catch (error) {
+      console.error("Error reading file:", error);
+    }
+  };
+
+
   useEffect(() => {
-    if(activeFiles.length === 0 && !clickedFiles) {
+    console.log('selected file: ', selectedFile)
+    if(selectedFile === null) {
       setFileContent("");
     }
-  }, [activeFiles, clickedFiles])
 
-  useEffect(() => {
-    const readFile = async () => {
-      try {
-        if (!selectedFile && !clickedFiles) {
-          return;
-        }
-  
-        for (const [name, handle] of Object.entries(fileHandles)) {
-          if (name === selectedFile) {
-            const file = await handle.getFile();
-            const content = await file.text();
-            setFileContent(content);
-            break;
-          }
-        }
-      } catch (error) {
-        console.error("Error reading file:", error);
-      }
-    };
-  
-    readFile();
-  }, [selectedFile, clickedFiles, fileHandles]);
-  
-
-  useEffect(() => {
-    //save keybind
-    const handleKeyDown = (e) => {
-      if((e.ctrlKey || e.metaKey) && e.key === 's') {
-        e.preventDefault();
-        //save file here
-        console.log('ctrl+s logged')
-        console.log("file handles: ", fileHandles, "selected file: ", selectedFile)
-        const writeFile = async () => {
-          if(fileHandles && selectedFile) {
-            for(const [name, handle] of Object.entries(fileHandles)) {
-              if(name === selectedFile) {
-                const writeableStream = await handle.createWritable();
-                await writeableStream.write(fileContent);
-                await writeableStream.close();
-              }
-            }
-          }
-        }
-
-        writeFile();
-      }
-    }
-    window.addEventListener('keydown', handleKeyDown);
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    }
-  }, [fileContent])
-
-  useEffect(() => {
-    if (selectedFile) {
+    if(selectedFile !== null) {
       let index = selectedFile.split('.').length - 1;
       let fileType = selectedFile.split('.')[index];
 
@@ -111,8 +79,39 @@ const CodeEditor = () => {
         default:
           setLanguage('plaintext');
       }
-    }
+    
+    readFile();
+  }
   }, [selectedFile]);
+  
+
+  const handleKeyDown = (e) => {
+    if((e.ctrlKey || e.metaKey) && e.key === 's') {
+      e.preventDefault();
+      //save file here
+      console.log('ctrl+s logged')
+      console.log("file handles: ", fileHandles, "selected file: ", selectedFile)
+      const writeFile = async () => {
+        if(fileHandles && selectedFile) {
+          for(const [name, handle] of Object.entries(fileHandles)) {
+            if(name === selectedFile) {
+              const writeableStream = await handle.createWritable();
+              await writeableStream.write(fileContent);
+              await writeableStream.close();
+            }
+          }
+        }
+      }
+
+      writeFile();
+    }
+
+  return () => {
+    window.removeEventListener('keydown', handleKeyDown);
+  }
+  }
+
+  window.addEventListener('keydown', handleKeyDown);
 
   const onMount = (editor) => {
     editorRef.current = editor;
@@ -132,7 +131,10 @@ const CodeEditor = () => {
             theme="vs-dark"
             onMount={onMount}
             value={fileContent}
-            onChange={(fileContent) => setFileContent(fileContent)}
+            onChange={(newValue) => {
+            console.log("Editor onChange:", newValue);
+            setFileContent(newValue); // Update fileContent on change
+            }}
           />
         </Box>
         <Output editorRef={editorRef} language={language} />
