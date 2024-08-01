@@ -10,13 +10,6 @@ const FileSelectFromDir = ({ parentHandle, dirFileHandles }) => {
     const { directoryHandles, setDirectoryHandles } = useContext(DirectoryHandleArrayContext);
     const [modalOpen, setModalOpen] = useState(false);
 
-
-    useEffect(() => {
-      console.log("files after file upload : ", files);
-      console.log("file handles after file upload: ", fileHandles);
-      console.log("directory handles after file upload : ", directoryHandles);
-    })
-
     useEffect(() => {
         if (dirFileHandles && dirFileHandles.length > 0) {
             setModalOpen(true);
