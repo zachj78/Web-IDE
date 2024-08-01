@@ -1,6 +1,6 @@
 import React, { useContext, useEffect } from 'react';
 import { Box, HStack } from '@chakra-ui/react';
-import { ClickedFileContext, ActiveFileContext, SelectedFileContext } from '../../context/IDEContext';
+import { ClickedFileContext, ActiveFileContext, SelectedFileContext, FileContentContext } from '../../context/IDEContext';
 import '../../styles/ActiveFileBar.css';
 import { FaTimes } from 'react-icons/fa';
 
@@ -8,7 +8,12 @@ const ActiveFileBar = () => {
   const { activeFiles, setActiveFiles } = useContext(ActiveFileContext);
   const { clickedFiles, setClickedFiles } = useContext(ClickedFileContext);
   const { selectedFile, setSelectedFile } = useContext(SelectedFileContext);
-
+  const { fileContent, setFileContent } = useContext(FileContentContext);
+  
+  useEffect(() => {
+    console.log("FILE CONTENT: ", fileContent)
+  }, [fileContent])
+  
   const removeActiveFile = (activeFile) => {
     const filteredFiles = activeFiles.filter((file) => file !== activeFile);
     setSelectedFile(filteredFiles[0] || null);
@@ -18,9 +23,13 @@ const ActiveFileBar = () => {
   const changeSelectedFile = (fileToChange) => {
     if (selectedFile === fileToChange) {
       setClickedFiles(null);
-      activeFiles.length === 0
-        ? setSelectedFile(null)
-        : setSelectedFile(activeFiles[0]);
+      if(activeFiles.length === 0) {
+        console.log("NO ACTIVE FILES");
+        setSelectedFile(null)
+        console.log("from changeSelectedFile(SHOULD BE NULL): ", selectedFile)
+      } else {
+        setSelectedFile(activeFiles[0]);
+      }
     }
   };
 
