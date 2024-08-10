@@ -2,9 +2,8 @@ import { Box, Button, Text, useToast } from '@chakra-ui/react';
 import { executeCode } from './api';
 import { useState } from 'react';
 
-const Output = (props) => {
+const Output = ({ editorRef, language}) => {
   const toast = useToast();
-  const { editorRef, language } = props;
   const [output, setOutput] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(false);

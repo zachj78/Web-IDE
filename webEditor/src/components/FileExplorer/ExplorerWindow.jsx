@@ -1,5 +1,5 @@
 import { Box, Flex, HStack, Text } from '@chakra-ui/react';
-import React, { useContext, useState } from 'react';
+import React from 'react';
 import InputBar from './InputBar';
 import FileTree from './FileTree';
 import FileErrorDisplay from './FileErrorDisplay';

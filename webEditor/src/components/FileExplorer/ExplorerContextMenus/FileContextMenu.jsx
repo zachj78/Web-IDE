@@ -4,7 +4,8 @@ import { createPortal } from "react-dom";
 
 const FileContextMenu = ({ fileContextMenuPos, fileContextMenuItems, fileContextMenuVisible, setFileContextMenuVisible }) => {
   useEffect(() => {
-    const handleClickOutside = (event) => {
+    const handleClickOutside = (e) => {
+      e.preventDefault();
       if (fileContextMenuVisible) {
         setFileContextMenuVisible(false);
       }

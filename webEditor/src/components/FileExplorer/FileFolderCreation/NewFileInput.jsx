@@ -1,13 +1,14 @@
-import React, { useContext, useRef } from 'react';
+import React, { useContext, useEffect, useRef } from 'react';
 import { Box, Button, FormControl, Input, InputGroup, InputRightElement } from '@chakra-ui/react';
 import { FaTimes } from 'react-icons/fa';
-import { ClickedFolderContext, DirectoryHandleArrayContext, ExplorerErrorHandler, FileHandleArrayContext } from '../../../context/IDEContext';
+import { ClickedFolderContext } from '../../../context/IDEContext';
+import { useDispatch, useSelector } from 'react-redux';
+import { addError, addFileHandles } from '../../../Redux/filesSlice';
 
 const NewFileInput = ({ setNewFileRender }) => {
-  const { setExplorerErrorHandler } = useContext(ExplorerErrorHandler);
+  const dispatch = useDispatch();
+  const directoryHandles = useSelector((state) => state.directoryHandles);
   const { clickedFolder } = useContext(ClickedFolderContext);
-  const { directoryHandles } = useContext(DirectoryHandleArrayContext);
-  const { setFileHandles } = useContext(FileHandleArrayContext);
   const newFileName = useRef();
 
   const handleFileCreate = async (e) => {
@@ -15,41 +16,43 @@ const NewFileInput = ({ setNewFileRender }) => {
 
     try {
       if (!directoryHandles) {
-        setExplorerErrorHandler("Please upload a folder first");
+        dispatch(addError({ err: "Please upload a folder first"}))
         return;
       }
 
       if (!clickedFolder) {
-        setExplorerErrorHandler("Select a folder to create file in");
+        dispatch(addError({ err: "Select a folder to create file in" }))
         return;
       }
 
       const fileName = newFileName.current.value;
 
       if (!fileName) {
-        setExplorerErrorHandler("Please set a file name");
+        dispatch(addError({ err: "Please set a file name" }))
         return;
       }
 
       for (const [name, handle] of Object.entries(directoryHandles)) {
         const lastPart = name.split('/').pop();
-        if (lastPart === clickedFolder) {
+        if (name === clickedFolder) {
           const fileHandle = await handle.getFileHandle(fileName, { create: true });
-
+          const fullPath = name + '/' + fileName;
+          
+          let newFileHandle = {};
+          newFileHandle[fullPath] = fileHandle;
+          
           const writableStream = await fileHandle.createWritable();
           writableStream.write(' ');
           await writableStream.close();
 
           setNewFileRender(false);
 
-          setFileHandles((prevHandles) => ({
-            ...prevHandles,
-            [fileName]: fileHandle
-          }));
+          dispatch(addFileHandles({ fileHandles: newFileHandle }));
         }
       }
     } catch (err) {
       console.error("Error creating file: ", err);
+      dispatch(addError({ err: "Error creating file, please try again" }));
     }
   };
 

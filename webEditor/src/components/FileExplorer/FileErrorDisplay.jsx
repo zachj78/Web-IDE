@@ -1,5 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { ExplorerErrorHandler } from '../../context/IDEContext';
+import { useSelector } from 'react-redux';
 import {
   Popover,
   PopoverContent,
@@ -10,9 +11,8 @@ import {
 } from '@chakra-ui/react';
 
 const FileErrorDisplay = () => {
-  const { explorerErrorHandler, setExplorerErrorHandler } =
-    useContext(ExplorerErrorHandler);
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const explorerErrorHandler = useSelector((state) => state.explorerErrorHandler)
+  const { onOpen, onClose } = useDisclosure();
   const [showPopover, setShowPopover] = useState(false);
 
   useEffect(() => {

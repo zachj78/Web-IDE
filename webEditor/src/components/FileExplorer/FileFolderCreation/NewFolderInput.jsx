@@ -1,17 +1,16 @@
 import React, { useContext, useEffect, useRef } from 'react';
 import { Box, Button, FormControl, Input, InputGroup, InputRightElement } from '@chakra-ui/react';
 import { FaTimes } from 'react-icons/fa';
-import { ClickedFolderContext, DirectoryHandleArrayContext, ExplorerErrorHandler, FileHandleArrayContext } from '../../../context/IDEContext';
+import { ClickedFolderContext } from '../../../context/IDEContext';
+import { useDispatch, useSelector } from 'react-redux';
+import { addError, addDirectoryHandles } from '../../../Redux/filesSlice';
 
 const NewFolderInput = ({ setNewFolderRender }) => {
-  const { setExplorerErrorHandler } = useContext(ExplorerErrorHandler);
+  const dispatch = useDispatch();
+  const directoryHandles = useSelector((state) => state.directoryHandles);
+  
   const { clickedFolder } = useContext(ClickedFolderContext);
-  const { directoryHandles, setDirectoryHandles } = useContext(DirectoryHandleArrayContext);
   const newFolderName = useRef();
-
-    useEffect(() => {
-        console.log("dir handles : ", directoryHandles);
-    }, [directoryHandles])
 
   const handleFolderCreate = async (e) => {
     e.preventDefault();
@@ -20,12 +19,12 @@ const NewFolderInput = ({ setNewFolderRender }) => {
     console.log("clicked folder: ", clickedFolder)
 
     if (!directoryHandles) {
-        setExplorerErrorHandler("Please upload a folder first");
+      dispatch(addError({ err: "Please upload a folder first" }));
         return;
       }
 
     if (!clickedFolder) {
-        setExplorerErrorHandler("Select a folder to create file in");
+        dispatch(addError({ err: "Select a folder to create new sub-folder in" }));
         return;
     }
 
@@ -36,20 +35,18 @@ const NewFolderInput = ({ setNewFolderRender }) => {
                 let newFolderHandle = await handle.getDirectoryHandle(folderName, { create: true });
                 let newFolderName = path + '/' + folderName;
 
-                console.log("Success!");
+                let newDirHandle = {};
+                newDirHandle[newFolderName] = newFolderHandle;
+                console.log("Success!: creating folder: ", newDirHandle);
 
                 setNewFolderRender(false);
-
-                setDirectoryHandles((prevHandles) => ({
-                  ...prevHandles,
-                  [newFolderName]: newFolderHandle
-                }));
+                dispatch(addDirectoryHandles({ directoryHandles: newDirHandle }))
             }
         }
         //re-render file directory object(files)
     } catch(err) {
-        console.err("couldnt create folder -- ", err)
-        setExplorerErrorHandler("Could not create file, please try again")
+        console.err("Error creating folder: ", err)
+        dispatch(addError({ err: "Could not create file, please try again" }));
     }
   };
 

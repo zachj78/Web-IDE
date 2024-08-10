@@ -1,5 +1,8 @@
 {
   "dependencies": {
     "git": "^0.1.5"
+  },
+  "devDependencies": {
+    "electron": "^31.3.1"
   }
 }

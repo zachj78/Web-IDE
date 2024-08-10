@@ -1,52 +1,81 @@
 import { Box, HStack } from '@chakra-ui/react';
 import { Editor } from '@monaco-editor/react';
 import { useRef, useState, useContext, useEffect } from 'react';
+import { useSelector } from 'react-redux';
 import Output from './Output';
 import ExplorerWindow from '../FileExplorer/ExplorerWindow';
 import ActiveFileBar from './ActiveFileBar';
-import { ActiveFileContext, ClickedFileContext, DirectoryHandleArrayContext, FileContentContext, FileHandleArrayContext, SelectedFileContext } from '../../context/IDEContext'
+import { FileContentContext } from '../../context/IDEContext';
 
 const CodeEditor = () => {
+  const clickedFile = useSelector((state) => state.clickedFile);
+  const selectedFile = useSelector((state) => state.selectedFile);
+  const fileHandles = useSelector((state) => state.fileHandles);
   const editorRef = useRef();
+  const abortControllerRef = useRef(new AbortController());
   const [language, setLanguage] = useState('javascript');
-  const {fileContent, setFileContent } = useContext(FileContentContext);
-  const { selectedFile } = useContext(SelectedFileContext);
-  const { fileHandles } = useContext(FileHandleArrayContext);
-  const { directoryHandles } = useContext(DirectoryHandleArrayContext);
-  const { activeFiles } = useContext(ActiveFileContext);
-  const { clickedFiles } = useContext(ClickedFileContext);
+  const { fileContent, setFileContent } = useContext(FileContentContext);
+  const [loading, setLoading] = useState(false);
 
-  const readFile = async () => {
+  const readFile = async (fileName, signal) => {
+    console.log("reading file content")
     try {
-      if (!selectedFile && !clickedFiles) {
-        console.log("NO SELECTED FILE OR CLICKED FILES AVAILABLE FROM readFile()")
+      if (!fileName) {
         return;
       }
-  
+
       for (const [name, handle] of Object.entries(fileHandles)) {
-        if (name === selectedFile) {
+        if (name === fileName) {
           const file = await handle.getFile();
           const content = await file.text();
-          console.log("Setting fileContent from readFile");
-          setFileContent(content);
+          if (!signal.aborted) {
+            console.log("Setting fileContent from readFile");
+            setFileContent(content);
+            setLoading(false);
+          }
           break;
         }
       }
     } catch (error) {
+      if (error.name !== 'AbortError') {
+        console.error("Error reading file:", error);
+        setLoading(false);
+      }
       console.error("Error reading file:", error);
     }
   };
 
+  const writeFile = async () => {
+    if (fileHandles && selectedFile) {
+      for (const [name, handle] of Object.entries(fileHandles)) {
+        if (name === selectedFile) {
+          const writeableStream = await handle.createWritable();
+          await writeableStream.write(fileContent);
+          await writeableStream.close();
+        }
+      }
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+      e.preventDefault();
+      // Save file here
+      console.log('ctrl+s logged');
+      console.log("file handles: ", fileHandles, "selected file: ", selectedFile);
+
+      writeFile();
+    }
+  };
 
   useEffect(() => {
-    console.log('selected file: ', selectedFile)
-    if(selectedFile === null) {
+    console.log('selected file: ', selectedFile);
+    if (selectedFile === null) {
+      console.log("BALLOCKS!");
       setFileContent("");
-    }
-
-    if(selectedFile !== null) {
-      let index = selectedFile.split('.').length - 1;
-      let fileType = selectedFile.split('.')[index];
+    } else {
+      const index = selectedFile.split('.').length - 1;
+      const fileType = selectedFile.split('.')[index];
 
       switch (fileType) {
         case 'txt':
@@ -79,39 +108,20 @@ const CodeEditor = () => {
         default:
           setLanguage('plaintext');
       }
-    
-    readFile();
-  }
-  }, [selectedFile]);
-  
 
-  const handleKeyDown = (e) => {
-    if((e.ctrlKey || e.metaKey) && e.key === 's') {
-      e.preventDefault();
-      //save file here
-      console.log('ctrl+s logged')
-      console.log("file handles: ", fileHandles, "selected file: ", selectedFile)
-      const writeFile = async () => {
-        if(fileHandles && selectedFile) {
-          for(const [name, handle] of Object.entries(fileHandles)) {
-            if(name === selectedFile) {
-              const writeableStream = await handle.createWritable();
-              await writeableStream.write(fileContent);
-              await writeableStream.close();
-            }
-          }
-        }
-      }
-
-      writeFile();
+      abortControllerRef.current.abort();
+      abortControllerRef.current = new AbortController();
+      readFile(selectedFile, abortControllerRef.current.signal);
     }
+  }, [selectedFile]);
 
-  return () => {
-    window.removeEventListener('keydown', handleKeyDown);
-  }
-  }
+  useEffect(() => {
+    window.addEventListener('keydown', handleKeyDown);
 
-  window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [fileContent]);
 
   const onMount = (editor) => {
     editorRef.current = editor;
@@ -132,8 +142,8 @@ const CodeEditor = () => {
             onMount={onMount}
             value={fileContent}
             onChange={(newValue) => {
-            console.log("Editor onChange:", newValue);
-            setFileContent(newValue); // Update fileContent on change
+              console.log("Editor onChange:", newValue);
+              setFileContent(newValue); // Update fileContent on change
             }}
           />
         </Box>

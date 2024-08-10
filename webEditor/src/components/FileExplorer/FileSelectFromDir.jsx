@@ -1,13 +1,11 @@
 import { Box } from '@chakra-ui/react';
 import React, { useEffect, useState, useContext } from 'react';
 import CenteredModal from '../ReusableComponents/ReusableModal';
-import { FileDirectoryContext, ExplorerErrorHandler, FileHandleArrayContext, DirectoryHandleArrayContext } from '../../context/IDEContext';
+import { useDispatch, useSelector } from 'react-redux';
+import { addFileHandles, addFiles, updateFiles, addDirectoryHandles, addError } from '../../Redux/filesSlice'
 
 const FileSelectFromDir = ({ parentHandle, dirFileHandles }) => {
-    const { files, setFiles } = useContext(FileDirectoryContext);
-    const { setExplorerErrorHandler } = useContext(ExplorerErrorHandler);
-    const { fileHandles, setFileHandles } = useContext(FileHandleArrayContext);
-    const { directoryHandles, setDirectoryHandles } = useContext(DirectoryHandleArrayContext);
+    const dispatch = useDispatch();
     const [modalOpen, setModalOpen] = useState(false);
 
     useEffect(() => {
@@ -22,51 +20,29 @@ const FileSelectFromDir = ({ parentHandle, dirFileHandles }) => {
         try {
           const file = await fileHandle.getFile();
           const fullFilePath = `${parentHandle.name}/${file.name}`;
-          setFiles((prevFiles) => {
-            if (prevFiles[parentHandle.name]) {
-              return {
-                ...prevFiles,
-                [parentHandle.name]: {
-                  ...prevFiles[parentHandle.name],
-                  [fileHandle.name]: 'file', // Add or update the file
-                },
-              };
-            } else {
-              return {
-                ...prevFiles,
-                [parentHandle.name]: {
-                  [fileHandle.name]: 'file',
-                },
-              };
-            }
-          });
           
-      
-          setFileHandles((prevHandles) => ({
-            ...prevHandles,
-            [fullFilePath]: fileHandle,
+          dispatch(updateFiles({
+            parentHandleName: parentHandle.name,
+            fileHandleName: fileHandle.name,
+          }));
+          
+          dispatch(addFileHandles({ 
+            fileHandles: { 
+              [fullFilePath]: fileHandle
+            }
           }));
 
-          setDirectoryHandles((prevHandles = {}) => {
-            if(!prevHandles[parentHandle.name]) {
-                return {
-                    ...prevHandles,
-                    [parentHandle.name]: parentHandle
-                }
+          dispatch(addDirectoryHandles({
+            directoryHandles: {
+                [parentHandle.name]: parentHandle
             }
-            return prevHandles;
-          })
+          }));
 
         } catch (err) {
           console.error("Error reading selected file:", err);
-          setExplorerErrorHandler("Error reading file, try again");
+          dispatch(addError({ err: "Error reading file, try again"}));
         }
       };
-    
-      const structureAddedFile = () => {
-            const directory = {};
-            directory[parentHandle.name]
-      }
 
     return (
         <>
